@@ -21,10 +21,13 @@ export default function Landing() {
   const [params]  = useSearchParams();
   const authError  = params.get('auth_error');
 
-  const [manual,  setManual]  = useState(false);
+  // auto-open manual form if LinkedIn isn't configured
+  const [manual,  setManual]  = useState(authError === 'no_linkedin_credentials');
   const [form,    setForm]    = useState({ name: '', headline: '', profileUrl: '' });
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(authError);
+  const [error,   setError]   = useState(
+    authError && authError !== 'no_linkedin_credentials' ? authError : null
+  );
 
   const handleManual = async (e) => {
     e.preventDefault();
@@ -126,6 +129,11 @@ export default function Landing() {
               <h3 className="font-semibold text-sm">Quick Setup</h3>
               <span className="text-xs text-slate-500 ml-auto">10 seconds</span>
             </div>
+            {authError === 'no_linkedin_credentials' && (
+              <div className="text-xs text-slate-400 bg-surface-2 border border-border rounded-lg px-3 py-2">
+                LinkedIn OAuth isn't configured yet — enter your details below to get started instantly.
+              </div>
+            )}
 
             <div>
               <label className="label">Your Name *</label>
