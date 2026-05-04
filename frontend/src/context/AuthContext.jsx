@@ -21,7 +21,8 @@ export function AuthProvider({ children }) {
   useEffect(() => { fetchMe(); }, [fetchMe]);
 
   const loginLinkedIn = () => {
-    window.location.href = '/auth/linkedin';
+    const base = import.meta.env.VITE_API_URL || '';
+    window.location.href = `${base}/auth/linkedin`;
   };
 
   const loginManual = async ({ name, headline, profileUrl }) => {
