@@ -15,18 +15,34 @@ if (fs.existsSync(DIST)) {
 }
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3001',
+  'https://linked-ai.netlify.app',
+];
+
 app.use(cors({
-  origin: (_origin, cb) => cb(null, true),
+  origin: (origin, cb) => {
+    // allow server-to-server / curl (no origin) and all listed origins
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: ${origin} not allowed`));
+  },
   credentials: true,
 }));
 
 app.use(express.json({ limit: '10mb' }));
 
+const isProd = process.env.NODE_ENV === 'production';
 app.use(session({
   secret:            process.env.SESSION_SECRET || 'linkedai-dev-secret',
   resave:            false,
   saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 },
+  cookie: {
+    secure:   isProd,           // HTTPS-only in production (Render)
+    httpOnly: true,
+    sameSite: isProd ? 'none' : 'lax', // cross-origin cookies need 'none' on HTTPS
+    maxAge:   7 * 24 * 60 * 60 * 1000,
+  },
 }));
 
 // ── API routes ────────────────────────────────────────────────────────────────
